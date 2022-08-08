@@ -140,41 +140,42 @@ public:
          * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
          * a large 4-byte int at any alignment.
          */
-        pchMessageStart[0] = 0x90;
-        pchMessageStart[1] = 0xc4;
-        pchMessageStart[2] = 0xfd;
-        pchMessageStart[3] = 0xe9;
-        vAlertPubKey = ParseHex("0000098d3ba6ba6e7423fa5cbd6a89e0a9a5348f88d332b44a5cb1a8b7ed2c1eaa335fc8dc4f012cb8241cc0bdafd6ca70c5f5448916e4e6f511bcd746ed57dc50");
-        nDefaultPort = 51472;
-        bnProofOfWorkLimit = ~uint256(0) >> 20; // PIVX starting difficulty is 1 / 2^12
+        pchMessageStart[0] = 0xfa;
+        pchMessageStart[1] = 0x23;
+        pchMessageStart[2] = 0x43;
+        pchMessageStart[3] = 0x65;
+        vAlertPubKey = ParseHex("03f012092c5fe9ed406b43316fc87d8ace9e8eb7764999db00ef60009ddddfa723");
+        nDefaultPort = 23511;
+        bnProofOfWorkLimit = ~uint256(0) >> 16;
         nSubsidyHalvingInterval = 210000;
         nMaxReorganizationDepth = 100;
         nEnforceBlockUpgradeMajority = 8100; // 75%
         nRejectBlockOutdatedMajority = 10260; // 95%
         nToCheckBlockUpgradeMajority = 10800; // Approximate expected amount of blocks in 7 days (1440*7.5)
         nMinerThreads = 0;
-        nTargetSpacing = 1 * 60;        // 1 minute
-        nMaturity = 100;
-        nStakeMinDepth = 600;
+        nTargetSpacing = 64; // Myce: 64 seconds
+        nMaturity = 5;
+        nStakeMinDepth = 200;
         nFutureTimeDriftPoW = 7200;
         nFutureTimeDriftPoS = 180;
         nMasternodeCountDrift = 20;
-        nMaxMoneyOut = 21000000 * COIN;
+        nMaxMoneyOut = 250000000 * COIN;
 
         /** Height or Time Based Activations **/
-        nLastPOWBlock = 259200;
+        nPoSStartBlock = 10000;
+        nLastPoWBlock = 200000;
         nPivxBadBlockTime = 1471401614; // Skip nBit validation of Block 259201 per PR #915
         nPivxBadBlocknBits = 0x1c056dac; // Skip nBit validation of Block 259201 per PR #915
-        nModifierUpdateBlock = 615800;
-        nZerocoinStartHeight = 863787;
-        nZerocoinStartTime = 1508214600; // October 17, 2017 4:30:00 AM
-        nBlockEnforceSerialRange = 895400; //Enforce serial range starting this block
-        nBlockRecalculateAccumulators = 908000; //Trigger a recalculation of accumulators
-        nBlockFirstFraudulent = 891737; //First block that bad serials emerged
-        nBlockLastGoodCheckpoint = 891730; //Last valid accumulator checkpoint
-        nBlockEnforceInvalidUTXO = 902850; //Start enforcing the invalid UTXO's
-        nInvalidAmountFiltered = 268200*COIN; //Amount of invalid coins filtered through exchanges, that should be considered valid
-        nBlockZerocoinV2 = 1153160; //!> The block that zerocoin v2 becomes active - roughly Tuesday, May 8, 2018 4:00:00 AM GMT
+        nModifierUpdateBlock = 710000;
+        nZerocoinStartHeight = 0;
+        nZerocoinStartTime = 1519813976; // October 17, 2017 4:30:00 AM
+        nBlockEnforceSerialRange = -1; //Enforce serial range starting this block
+        nBlockRecalculateAccumulators = nZerocoinStartHeight + 10; //Trigger a recalculation of accumulators
+        nBlockFirstFraudulent = nZerocoinStartHeight; //First block that bad serials emerged
+        nBlockLastGoodCheckpoint = nZerocoinStartHeight; //Last valid accumulator checkpoint
+        nBlockEnforceInvalidUTXO = -1; //Start enforcing the invalid UTXO's
+        nInvalidAmountFiltered = 0*COIN; //Amount of invalid coins filtered through exchanges, that should be considered valid
+        nBlockZerocoinV2 = nZerocoinStartHeight + 20; //!> The block that zerocoin v2 becomes active - roughly Tuesday, May 8, 2018 4:00:00 AM GMT
         nBlockDoubleAccumulated = 1050010;
         nEnforceNewSporkKey = 1566860400; //!> Sporks signed after Monday, August 26, 2019 11:00:00 PM GMT must use the new spork key
         nRejectOldSporkKey = 1569538800; //!> Fully reject old spork key after Thursday, September 26, 2019 11:00:00 PM GMT
@@ -182,9 +183,15 @@ public:
         // Public coin spend enforcement
         nPublicZCSpends = 1880000;
 
+        // Hard fork enforcement
+        nMandatoryUpgradeBlock[0] = 378500;
+        nMandatoryUpgradeBlock[1] = std::numeric_limits<int>::max();
+        nUpgradeBlockVersion[0] = 8; // Block headers must be at least this version after upgrade block
+        nUpgradeBlockVersion[1] = 10;
+
         // Fake Serial Attack
-        nFakeSerialBlockheightEnd = 1686229;
-        nSupplyBeforeFakeSerial = 4131563 * COIN;   // zerocoin supply at block nFakeSerialBlockheightEnd
+        nFakeSerialBlockheightEnd = 0;
+        nSupplyBeforeFakeSerial = 0 * COIN;   // zerocoin supply at block nFakeSerialBlockheightEnd
 
         /**
          * Build the genesis block. Note that the output of the genesis coinbase cannot
@@ -216,17 +223,20 @@ public:
         assert(genesis.hashMerkleRoot == uint256("0x8ea58063fe9e14c45dbf5efab5b3812291074f6b1af5305b7b45647bdbfdea90"));
         assert(hashGenesisBlock == uint256("0x0000c74cc66c72cb1a327c5c1d4893ae5276aa50be49fb23cec21df1a2f20d87"));
 
-        vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "pivx.seed.fuzzbawls.pw"));     // Primary DNS Seeder from Fuzzbawls
-        vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "pivx.seed2.fuzzbawls.pw"));    // Secondary DNS Seeder from Fuzzbawls
-        vSeeds.push_back(CDNSSeedData("warrows.dev", "dnsseed.pivx.warrows.dev"));    // Primery DNS Seeder from warrows
+        vSeeds.push_back(CDNSSeedData("1", "yce.zentec.network"));
+        vSeeds.push_back(CDNSSeedData("2", "seed1.myce.world"));
+        vSeeds.push_back(CDNSSeedData("3", "seed2.myce.world"));
+        vSeeds.push_back(CDNSSeedData("4", "seed3.myce.world"));
+        vSeeds.push_back(CDNSSeedData("5", "seed4.myce.world"));
+        vSeeds.push_back(CDNSSeedData("6", "seed5.myce.world"));
 
-        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 30);
-        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 13);
-        base58Prefixes[SECRET_KEY] = std::vector<unsigned char>(1, 212);
-        base58Prefixes[EXT_PUBLIC_KEY] = boost::assign::list_of(0x02)(0x2D)(0x25)(0x33).convert_to_container<std::vector<unsigned char> >();
-        base58Prefixes[EXT_SECRET_KEY] = boost::assign::list_of(0x02)(0x21)(0x31)(0x2B).convert_to_container<std::vector<unsigned char> >();
+        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 50);
+        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 85);
+        base58Prefixes[SECRET_KEY] = std::vector<unsigned char>(1, 153);
+        base58Prefixes[EXT_PUBLIC_KEY] = boost::assign::list_of(0x04)(0x88)(0xB2)(0x1E).convert_to_container<std::vector<unsigned char> >();
+        base58Prefixes[EXT_SECRET_KEY] = boost::assign::list_of(0x04)(0x88)(0xAD)(0xE4).convert_to_container<std::vector<unsigned char> >();
         // 	BIP44 coin type is from https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-        base58Prefixes[EXT_COIN_TYPE] = boost::assign::list_of(0x80)(0x00)(0x00)(0x77).convert_to_container<std::vector<unsigned char> >();
+        base58Prefixes[EXT_COIN_TYPE] = boost::assign::list_of(0x80)(0x10)(0x00)(0x00).convert_to_container<std::vector<unsigned char> >();
 
         convertSeed6(vFixedSeeds, pnSeed6_main, ARRAYLEN(pnSeed6_main));
 
@@ -295,7 +305,7 @@ public:
         nToCheckBlockUpgradeMajority = 5760; // 4 days
         nMinerThreads = 0;
         nTargetSpacing = 1 * 60;  // PIVX: 1 minute
-        nLastPOWBlock = 200;
+        nLastPoWBlock = 200;
         nPivxBadBlockTime = 1489001494; // Skip nBit validation of Block 259201 per PR #915
         nPivxBadBlocknBits = 0x1e0a20bd; // Skip nBit validation of Block 201 per PR #915
         nMaturity = 15;
@@ -394,7 +404,7 @@ public:
         nMinerThreads = 1;
         nTargetSpacing = 1 * 60;        // PIVX: 1 minutes
         bnProofOfWorkLimit = ~uint256(0) >> 1;
-        nLastPOWBlock = 250;
+        nLastPoWBlock = 250;
         nMaturity = 100;
         nStakeMinDepth = 0;
         nMasternodeCountDrift = 4;

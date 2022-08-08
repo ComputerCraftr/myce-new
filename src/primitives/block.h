@@ -27,7 +27,7 @@ class CBlockHeader
 {
 public:
     // header
-    static const int32_t CURRENT_VERSION=6;     //!> Version 6 supports V2 Stake Modifiers
+    static const int32_t CURRENT_VERSION=9;     //!> Version 6 supports V2 Stake Modifiers
     int32_t nVersion;
     uint256 hashPrevBlock;
     uint256 hashMerkleRoot;
@@ -46,16 +46,11 @@ public:
     template <typename Stream, typename Operation>
     inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
         READWRITE(this->nVersion);
-        nVersion = this->nVersion;
         READWRITE(hashPrevBlock);
         READWRITE(hashMerkleRoot);
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
-
-        //zerocoin active, header changes to include accumulator checksum
-        if(nVersion > 3)
-            READWRITE(nAccumulatorCheckpoint);
     }
 
     void SetNull()

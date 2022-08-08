@@ -4460,7 +4460,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
     std::vector<CBigNum> vBlockSerials;
     // TODO: Check if this is ok... blockHeight is always the tip or should we look for the prevHash and get the height?
     int blockHeight = chainActive.Height() + 1;
-    const bool fEnforceNewTransactionVersion = static_cast<uint32_t>(block.nVersion) >= 8;
+    const bool fEnforceNewTransactionVersion = static_cast<uint32_t>(block.nVersion) >= static_cast<uint32_t>(Params().WALLET_UPGRADE_VERSION());
     for (const CTransaction& tx : block.vtx) {
         if (static_cast<uint32_t>(tx.nVersion) < CTransaction::FIRST_FORK_VERSION && fEnforceNewTransactionVersion) {
             return state.DoS(100, error("%s : Transaction %s has invalid version %d", __func__, tx.GetHash().ToString(), tx.nVersion),
@@ -4514,21 +4514,17 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
     return true;
 }
 
-bool CheckWork(const CBlock block, CBlockIndex* const pindexPrev)
+bool CheckWork(const CBlock& block, CBlockIndex* const pindexPrev)
 {
     if (pindexPrev == NULL)
         return error("%s : null pindexPrev for block %s", __func__, block.GetHash().GetHex());
 
-    unsigned int nBitsRequired = GetNextWorkRequired(pindexPrev, &block);
+    unsigned int nBitsRequired;
 
-    if ((Params().NetworkID() != CBaseChainParams::REGTEST) && block.IsProofOfWork() && (pindexPrev->nHeight + 1 <= 68589)) {
-        double n1 = ConvertBitsToDouble(block.nBits);
-        double n2 = ConvertBitsToDouble(nBitsRequired);
-
-        if (std::abs(n1 - n2) > n1 * 0.5)
-            return error("%s : incorrect proof of work (DGW pre-fork) - %f %f %f at %d", __func__, std::abs(n1 - n2), n1, n2, pindexPrev->nHeight + 1);
-
-        return true;
+    if (block.nVersion >= Params().WALLET_UPGRADE_VERSION() || Params().NetworkID() != CBaseChainParams::MAIN) {
+        nBitsRequired = GetNextWorkRequired(pindexPrev, &block, block.IsProofOfStake());
+    } else {
+        nBitsRequired = GetLegacyNextWorkRequired(pindexPrev, &block, block.IsProofOfStake());
     }
 
     if (block.nBits != nBitsRequired) {
@@ -4555,7 +4551,7 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
 
     int nHeight = pindexPrev->nHeight + 1;
 
-    if ((Params().NetworkID() == CBaseChainParams::REGTEST) && block.nBits != GetNextWorkRequired(pindexPrev, &block))
+    if ((Params().NetworkID() == CBaseChainParams::REGTEST) && block.nBits != GetNextWorkRequired(pindexPrev, &block, block.nNonce == 0))
         return state.DoS(100, error("%s : incorrect proof of work", __func__),
                 REJECT_INVALID, "bad-diffbits");
 

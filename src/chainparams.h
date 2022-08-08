@@ -128,7 +128,10 @@ public:
 
     /** Height or Time Based Activations **/
     int ModifierUpgradeBlock() const { return nModifierUpdateBlock; }
-    int LAST_POW_BLOCK() const { return nLastPOWBlock; }
+    int WALLET_UPGRADE_BLOCK() const { return nMandatoryUpgradeBlock[0]; }
+    int WALLET_UPGRADE_VERSION() const { return nUpgradeBlockVersion[0]; }
+    int POS_START_BLOCK() const { return nPoSStartBlock; }
+    int LAST_POW_BLOCK() const { return nLastPoWBlock; }
     int PivxBadBlockTime() const { return nPivxBadBlockTime; }
     int PivxBadBlocknBits() const { return nPivxBadBlocknBits; }
     int Zerocoin_StartHeight() const { return nZerocoinStartHeight; }
@@ -165,7 +168,10 @@ protected:
     int nRejectBlockOutdatedMajority;
     int nToCheckBlockUpgradeMajority;
     int64_t nTargetSpacing;
-    int nLastPOWBlock;
+    int nPoSStartBlock;
+    int nLastPoWBlock;
+    int nMandatoryUpgradeBlock[2];
+    uint32_t nUpgradeBlockVersion[2];
     int64_t nPivxBadBlockTime;
     unsigned int nPivxBadBlocknBits;
     int nMasternodeCountDrift;

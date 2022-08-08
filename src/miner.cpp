@@ -87,13 +87,13 @@ public:
     }
 };
 
-void UpdateTime(CBlockHeader* pblock, const CBlockIndex* pindexPrev)
+void UpdateTime(CBlockHeader* pblock, const CBlockIndex* pindexPrev, bool fProofOfStake)
 {
     pblock->nTime = std::max(pindexPrev->GetMedianTimePast() + 1, GetAdjustedTime());
 
     // Updating time can change work required on testnet:
     if (Params().AllowMinDifficultyBlocks())
-        pblock->nBits = GetNextWorkRequired(pindexPrev, pblock);
+        pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, fProofOfStake);
 }
 
 std::pair<int, std::pair<uint256, uint256> > pCheckpointCache;
@@ -151,7 +151,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, CWallet* pwallet, 
     if (fProofOfStake) {
         boost::this_thread::interruption_point();
         pblock->nTime = GetAdjustedTime();
-        pblock->nBits = GetNextWorkRequired(pindexPrev, pblock);
+        pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, true);
         CMutableTransaction txCoinStake;
         int64_t nSearchTime = pblock->nTime; // search to current time
         bool fStakeFound = false;
@@ -483,8 +483,8 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, CWallet* pwallet, 
         // Fill in header
         pblock->hashPrevBlock = pindexPrev->GetBlockHash();
         if (!fProofOfStake)
-            UpdateTime(pblock, pindexPrev);
-        pblock->nBits = GetNextWorkRequired(pindexPrev, pblock);
+            UpdateTime(pblock, pindexPrev, false);
+        pblock->nBits = GetNextWorkRequired(pindexPrev, pblock, fProofOfStake);
         pblock->nNonce = 0;
 
         //Calculate the accumulator checkpoint only if the previous cached checkpoint need to be updated
@@ -829,7 +829,7 @@ void BitcoinMiner(CWallet* pwallet, bool fProofOfStake)
                 break;
 
             // Update nTime every few seconds
-            UpdateTime(pblock, pindexPrev);
+            UpdateTime(pblock, pindexPrev, false);
             if (Params().AllowMinDifficultyBlocks()) {
                 // Changing pblock->nTime can change work required on testnet:
                 hashTarget.SetCompact(pblock->nBits);

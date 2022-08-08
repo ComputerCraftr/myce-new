@@ -23,7 +23,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, CWallet* pwallet, 
 /** Modify the extranonce in a block */
 void IncrementExtraNonce(CBlock* pblock, CBlockIndex* pindexPrev, unsigned int& nExtraNonce);
 /** Check mined block */
-void UpdateTime(CBlockHeader* block, const CBlockIndex* pindexPrev);
+void UpdateTime(CBlockHeader* block, const CBlockIndex* pindexPrev, bool fProofOfStake);
 
 #ifdef ENABLE_WALLET
     /** Run the miner threads */
