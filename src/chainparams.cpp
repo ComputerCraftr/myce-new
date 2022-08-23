@@ -167,7 +167,7 @@ public:
         nPivxBadBlockTime = 1471401614; // Skip nBit validation of Block 259201 per PR #915
         nPivxBadBlocknBits = 0x1c056dac; // Skip nBit validation of Block 259201 per PR #915
         nModifierUpdateBlock = 710000;
-        nZerocoinStartHeight = 0;
+        nZerocoinStartHeight = 1;
         nZerocoinStartTime = 1519813976; // October 17, 2017 4:30:00 AM
         nBlockEnforceSerialRange = -1; //Enforce serial range starting this block
         nBlockRecalculateAccumulators = nZerocoinStartHeight + 10; //Trigger a recalculation of accumulators
