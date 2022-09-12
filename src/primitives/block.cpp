@@ -15,15 +15,17 @@
 
 uint256 CBlockHeader::GetHash() const
 {
-    if(nVersion < 4)
-        return HashQuark(BEGIN(nVersion), END(nNonce));
-
-    return Hash(BEGIN(nVersion), END(nAccumulatorCheckpoint));
+    if (nVersion > 1)
+        return Hash(BEGIN(nVersion), END(nNonce));
+    else
+        return GetPoWHash();
 }
 
 uint256 CBlockHeader::GetPoWHash() const
 {
-    return GetHash();
+    uint256 result;
+    scrypt_hash(reinterpret_cast<const char*>(&nVersion), 80, reinterpret_cast<const char*>(&nVersion), 80, reinterpret_cast<char*>(result.begin()), 1024, 1, 1, 32);
+    return result;
 }
 
 uint256 CBlock::BuildMerkleTree(bool* fMutated) const
