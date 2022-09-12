@@ -21,6 +21,11 @@ uint256 CBlockHeader::GetHash() const
     return Hash(BEGIN(nVersion), END(nAccumulatorCheckpoint));
 }
 
+uint256 CBlockHeader::GetPoWHash() const
+{
+    return GetHash();
+}
+
 uint256 CBlock::BuildMerkleTree(bool* fMutated) const
 {
     /* WARNING! If you're reading this because you're learning about crypto
