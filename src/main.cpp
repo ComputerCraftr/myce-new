@@ -4324,7 +4324,7 @@ bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state, bool f
             REJECT_INVALID, "high-hash");
 
     // Version 4 header must be used after Params().Zerocoin_StartHeight(). And never before.
-    if (block.GetBlockTime() > Params().Zerocoin_StartTime()) {
+    /*if (block.GetBlockTime() > Params().Zerocoin_StartTime()) {
         if(block.nVersion < Params().Zerocoin_HeaderVersion() && Params().NetworkID() != CBaseChainParams::REGTEST)
             return state.DoS(50, error("CheckBlockHeader() : block version must be above 4 after ZerocoinStartHeight"),
             REJECT_INVALID, "block-version");
@@ -4332,7 +4332,7 @@ bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state, bool f
         if (block.nVersion >= Params().Zerocoin_HeaderVersion())
             return state.DoS(50, error("CheckBlockHeader() : block version must be below 4 before ZerocoinStartHeight"),
             REJECT_INVALID, "block-version");
-    }
+    }*/
 
     return true;
 }
@@ -4564,6 +4564,17 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
     // Check blocktime against prev (WANT: blk_time > MedianTimePast)
     if (Params().NetworkID() != CBaseChainParams::REGTEST && block.GetBlockTime() <= pindexPrev->GetMedianTimePast())
         return state.DoS(50, error("%s : block timestamp too old", __func__), REJECT_INVALID, "time-too-old");
+
+    if (Params().NetworkID() != CBaseChainParams::REGTEST) {
+        // Enforce version 8 after mandatory upgrade block
+        if (nHeight >= Params().WALLET_UPGRADE_BLOCK()) {
+            if (block.nVersion < Params().WALLET_UPGRADE_VERSION())
+                return state.DoS(50, error("ContextualCheckBlockHeader() : block version must be at least %d after upgrade block", Params().WALLET_UPGRADE_VERSION()), REJECT_INVALID, "block-version");
+        } else {
+            if (block.nVersion >= Params().WALLET_UPGRADE_VERSION())
+                return state.DoS(50, error("ContextualCheckBlockHeader() : block version must be below %d before upgrade block", Params().WALLET_UPGRADE_VERSION()), REJECT_INVALID, "block-version");
+        }
+    }
 
     // Check that the block chain matches the known block chain up to a checkpoint
     if (!Checkpoints::CheckBlock(nHeight, hash))
